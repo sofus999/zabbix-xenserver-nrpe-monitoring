@@ -1,0 +1,45 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 2a86a62d5a4146d0ab1736f5424af785
+      name: <TEMPLATE GROUP NAME>
+  host_groups:
+    - uuid: 2a86a62d5a4146d0ab1736f5424af785
+      name: <HOST GROUP NAME>
+  templates:
+    - uuid: 9c561c7847ef42a5abd1c532f54167de
+      template: 'Discover Hosts through NRPE Agent'
+      name: <TEMPLATE NAME>
+      groups:
+        - name: <HOST GROUP NAME>
+      discovery_rules:
+        - uuid: 57a7c9f6f56644ba8f1f8d3991f9af3f
+          name: <DISCOVERY RULE NAME>
+          type: TRAP
+          key: xenapp.host.discovery
+          delay: '0'
+          lifetime_type: DELETE_NEVER
+          lifetime: '0'
+          enabled_lifetime_type: DISABLE_NEVER
+          host_prototypes:
+            - uuid: 454c435992414c2d92d1f26d9919dcb6
+              host: '{#HOST.NAME}'
+              name: '{#HOST.NAME}'
+              inventory_mode: AUTOMATIC
+              group_links:
+                - group:
+                    name: <HOST GROUP NAME>
+              templates:
+                - name: 'NRPE Checks by Zabbix Proxy'
+              custom_interfaces: 'YES'
+              interfaces:
+                - ip: '{#HOST.IP}'
+                - interface_ref: <INTERFACE REFERENCE eg. if1>
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.data
+      macros:
+        - macro: '{$IP.RANGE.MATCHES}'
+          value: <IP RANGE MATCHES>
+          description: 'Comma-seperated list of IP ranges or addresses'

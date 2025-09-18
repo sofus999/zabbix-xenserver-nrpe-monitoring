@@ -1,0 +1,23 @@
+zabbix_export:
+  version: '7.0'
+  host_groups:
+    - uuid: 2a86a62d5a4146d0ab1736f5424af785
+      name: XenServer Discovery
+  hosts:
+    - host: 'XenServer Discovery'
+      name: 'XenServer Discovery'
+      monitored_by: PROXY
+      proxy:
+        name: 'Zabbix Proxy'
+      templates:
+        - name: 'Discover Hosts through NRPE Agent'
+        - name: 'NRPE Checks by Zabbix Proxy'
+      groups:
+        - name: XenServer Discovery
+      interfaces:
+        - interface_ref: if1
+          type: AGENT
+          ip: '127.0.0.1'
+          port: '10050'
+          useip: 'YES'
+      inventory_mode: AUTOMATIC

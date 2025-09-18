@@ -1,0 +1,141 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: <TEMPLATE GROUP UUID>
+      name: <TEMPLATE GROUP NAME>
+  templates:
+    - uuid: cc1b895265d54f0291f59aecfee76b93
+      template: 'NRPE Checks by Zabbix Proxy'
+      name: <TEMPLATE NAME>
+      description: |
+        Monitors any Linux host with a Nagios (NRPE) agent installed, without requiring a Zabbix agent on the target.
+        
+        This template is designed to be used on hosts that are monitored via a Zabbix Proxy. All checks are executed from the proxy's Zabbix agent and sent to the target host's NRPE agent on port 5666.
+        
+        REQUIREMENTS:
+        
+        - A Zabbix Proxy with the Zabbix agent installed.
+        
+        - The discover_xen_metrics.sh and query_xen_server.sh external scripts must be present on the proxy.
+        
+        UserParameter definitions (xenserver.discovery and xenserver.query) must be configured on the proxy's Zabbix agent.
+        
+        - The target host's NRPE agent must be configured to allow connections from the proxy (nrpe.cfg 'allowed_hosts' parameter and must contain the necessary command definitions.)
+      templates:
+        - name: <TEMPLATE NAME>
+      groups:
+        - name: <HOST GROUP NAME>
+      items:
+        - uuid: 4d3e3068ce3246b783b05be969b706bf
+          name: <ITEM NAME>
+          type: TRAP
+          key: nrpe.master.data
+          delay: '0'
+          history: 7d
+          value_type: TEXT
+          trends: '0'
+          triggers:
+            - uuid: 18a504ff4c974039ac895e5a27563c39
+              expression: 'nodata(/<TEMPLATE NAME>/nrpe.master.data,10m)=1'
+              name: 'NRPE Monitoring Agent is not responding on {HOST.NAME}'
+              priority: HIGH
+              description: |
+                The master script query_xen_server.sh has not returned any data for the last 3 minutes. This will cause all dependent items to fail.
+                
+                Possible Causes: 
+                1. Check NRPE service on {HOST.NAME}
+                2. An error or crash within the script itself.
+                3. A network connectivity issue between the proxy and the target host's NRPE agent
+                
+                Please check the item's error message in "Latest data" and the Zabbix Proxy logs for more details
+              manual_close: 'YES'
+              dependencies:
+                - name: 'Alert: Unavailable by ICMP ping'
+                  expression: 'max(/<TEMPLATE NAME>/icmpping,#3)=0'
+      discovery_rules:
+        - uuid: 284ea349a4274c2d856df9eebe4c9bca
+          name: <DISCOVERY RULE NAME>
+          type: TRAP
+          key: xenapp.metrics.discovery
+          delay: '0'
+          lifetime_type: DELETE_NEVER
+          lifetime: '0'
+          enabled_lifetime_type: DISABLE_NEVER
+          item_prototypes:
+            - uuid: 95685406ec3440e6b37ac8a8dffd02a4
+              name: '{#ZABBIX_KEY}'
+              type: DEPENDENT
+              key: 'nrpe.[{#ZABBIX_KEY}]'
+              delay: '0'
+              value_type: FLOAT
+              units: '{#UNIT}'
+              valuemap:
+                name: 'Service state'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.[''{#ZABBIX_KEY}'']'
+                - type: JAVASCRIPT
+                  parameters:
+                    - |
+                      // Check if value is an error message
+                      if (value.match(/^(UNKNOWN|Check failed)/)) {
+                          return value;  // Keep error message as-is
+                      }
+                      // For numeric values, ensure it's a clean number
+                      var num = parseFloat(value);
+                      return isNaN(num) ? value : num.toString();
+              master_item:
+                key: nrpe.master.data
+              trigger_prototypes:
+                - uuid: 5b51bdafc7034de88726c87c4ae147b7
+                  expression: 'last(/<TEMPLATE NAME>/nrpe.[{#ZABBIX_KEY}]) > {$HIGH_THRESHOLD:"{#ZABBIX_KEY}"}'
+                  name: '{#ZABBIX_KEY} is above {$HIGH_THRESHOLD:"{#ZABBIX_KEY}"}: {ITEM.LASTVALUE}'
+                  priority: HIGH
+                  manual_close: 'YES'
+                - uuid: c4a931b456f545c98a4b1d8790535397
+                  expression: 'last(/<TEMPLATE NAME>/nrpe.[{#ZABBIX_KEY}]) > {$WARN_THRESHOLD:"{#ZABBIX_KEY}"}'
+                  name: '{#ZABBIX_KEY} is above {$WARN_THRESHOLD:"{#ZABBIX_KEY}"}: {ITEM.LASTVALUE}'
+                  priority: AVERAGE
+                  description: |
+                    The value for {#ZABBIX_KEY} on {HOST.NAME} has exceeded the warning threshold.
+                    
+                    Threshold: {$WARN.THRESHOLD:"{#ZABBIX_KEY}"}
+                    Current value: {ITEM.LASTVALUE}
+                  manual_close: 'YES'
+                  dependencies:
+                    - name: '{#ZABBIX_KEY} is above {$HIGH_THRESHOLD:"{#ZABBIX_KEY}"}: {ITEM.LASTVALUE}'
+                      expression: 'last(/<TEMPLATE NAME>/nrpe.[{#ZABBIX_KEY}]) > {$HIGH_THRESHOLD:"{#ZABBIX_KEY}"}'
+      macros:
+        - macro: '{$HIGH_THRESHOLD}'
+          value: '90'
+          description: 'Generic P2 threshold in %, unless other defined'
+        - macro: '{$HIGH_THRESHOLD:"dom0.load.1min"}'
+          value: '3.2'
+        - macro: '{$HIGH_THRESHOLD:"dom0.load.5min"}'
+          value: '3.1'
+        - macro: '{$HIGH_THRESHOLD:"dom0.load.15min"}'
+          value: '1.3'
+        - macro: '{$HIGH_THRESHOLD:"host.load"}'
+          value: '4'
+          description: 'Current system load of the CPU of the host'
+        - macro: '{$WARN_THRESHOLD}'
+          value: '80'
+          description: 'Generic P3 threshold in %, unless other defined'
+        - macro: '{$WARN_THRESHOLD:"dom0.load.1min"}'
+          value: '2.7'
+        - macro: '{$WARN_THRESHOLD:"dom0.load.5min"}'
+          value: '2.6'
+        - macro: '{$WARN_THRESHOLD:"dom0.load.15min"}'
+          value: '2.5'
+        - macro: '{$WARN_THRESHOLD:"host.load"}'
+          value: '3'
+          description: 'Current system load of the CPU of the host'
+      valuemaps:
+        - uuid: e74141ec729f4b9a93cffa2e47976762
+          name: 'Service state'
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up

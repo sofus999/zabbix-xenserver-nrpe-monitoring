@@ -1,0 +1,18 @@
+zabbix_export:
+  version: '7.0'
+  host_groups:
+    - uuid: <HOST GROUP UUID>
+      name: <HOST GROUP NAME>
+  hosts:
+    - host: <HOST NAME>
+      name: <HOST NAME>
+      monitored_by: <MONITORED BY eg. PROXY>
+      proxy:
+        name: <PROXY NAME>
+      templates:
+        - name: <TEMPLATE NAME>
+      groups:
+        - name: <HOST GROUP NAME>
+      interfaces:
+        - interface_ref: <INTERFACE REFERENCE eg. if1>
+      inventory_mode: AUTOMATIC
