@@ -103,6 +103,7 @@ sudo ./setup_cron_jobs.sh \
 ## 📈 Monitoring Dashboard
 
 After successful setup, you'll see automatic host discovery and comprehensive monitoring:
+<img width="1714" height="799" alt="image" src="https://github.com/user-attachments/assets/ad36f860-2088-4899-92e0-a8038151c650" />
 
 
 
