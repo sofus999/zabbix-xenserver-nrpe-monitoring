@@ -193,6 +193,7 @@ tail -f /var/log/zabbix/xenapp_*.log
 
 - **[Installation Guide](docs/INSTALLATION.md)** - Complete setup instructions
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Advanced configuration options
+- **[Script Examples](docs/SCRIPT_EXAMPLES.md)** - Real output examples and expected behavior
 - **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
 ## 🎯 Use Cases

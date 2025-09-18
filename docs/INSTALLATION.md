@@ -191,6 +191,8 @@ sudo -u zabbix /usr/lib/zabbix/externalscripts/discover_xenapp_hosts.sh \
     --zabbix-server <ZABBIX_SERVER_IP> --debug
 ```
 
+> **💡 Expected Output**: See [Script Examples](SCRIPT_EXAMPLES.md) for detailed examples of what these commands should output when working correctly.
+
 #### 2.5 Setup Automated Monitoring
 
 ```bash

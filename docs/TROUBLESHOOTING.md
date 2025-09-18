@@ -8,6 +8,8 @@ This guide helps you diagnose and resolve common issues with the Zabbix XenServe
 
 Run these commands to quickly assess the system health:
 
+> **💡 Tip**: For detailed examples of expected output, see [Script Examples](SCRIPT_EXAMPLES.md)
+
 ```bash
 # 1. Test NRPE connectivity
 check_nrpe -H <XENSERVER_IP> -c get_hostname
