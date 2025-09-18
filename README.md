@@ -6,7 +6,6 @@
 
 A comprehensive, enterprise-ready monitoring solution for XenServer/Citrix Hypervisor environments using Zabbix and NRPE agents. This solution provides automated host discovery, real-time performance monitoring, and intelligent alerting for virtualization infrastructure.
 
-![Zabbix Host Discovery Results](docs/screenshots/host-discovery-results.png)
 
 ## 🚀 Features
 
@@ -18,7 +17,7 @@ A comprehensive, enterprise-ready monitoring solution for XenServer/Citrix Hyper
 - **Scalable Design**: Supports large XenServer environments
 
 ## 📊 Monitored Metrics
-Reference: [Google Shell Style Guide](https://docs.xenserver.com/en-us/xencenter/current-release/performance-nrpe.html)
+Reference: [Monitoring host and dom0 resources with NRPE](https://docs.xenserver.com/en-us/xencenter/current-release/performance-nrpe.html)
 
 ### 🖥️ Host Level Metrics
 | Metric | Description | Units | Thresholds |
@@ -100,13 +99,12 @@ sudo ./setup_cron_jobs.sh \
 3. Import `templates/zbx_template_checks.yaml`
 4. Import `templates/zbx_export_hosts.yaml`
 
-![Template Import Process](docs/screenshots/template-import.png)
 
 ## 📈 Monitoring Dashboard
 
 After successful setup, you'll see automatic host discovery and comprehensive monitoring:
 
-![Zabbix Dashboard](docs/screenshots/zabbix-dashboard.png)
+
 
 **Features shown:**
 - ✅ 25 XenServer hosts discovered automatically
@@ -138,16 +136,6 @@ dom0.load.15min → 0.061 (from load15=)
 - **Log Rotation**: Weekly rotation with 1-month retention
 - **Path Isolation**: Works in restricted cron environments
 
-## 📊 Performance Insights
-
-### Load Average Trends
-![Load Average Monitoring](docs/screenshots/load-average-trends.png)
-
-### Resource Utilization
-![Resource Utilization](docs/screenshots/resource-utilization.png)
-
-### Alert Configuration
-![Alert Configuration](docs/screenshots/alert-configuration.png)
 
 ## 🔧 Configuration Examples
 
@@ -170,13 +158,13 @@ command[check_memory]=/usr/lib64/nagios/plugins/check_memory -w 80 -c 90
 ### Cron Schedule
 ```bash
 # Host Discovery (daily at 06:00)
-0 6 * * * /usr/lib/zabbix/externalscripts/discover_xenapp_hosts.sh "10.62.7.0/24" --trapper --hostname "XenServer Discovery" --zabbix-server 192.121.42.195
+0 6 * * * /usr/lib/zabbix/externalscripts/discover_xenapp_hosts.sh "10.62.7.0/24" --trapper --hostname "XenServer Discovery" --zabbix-server 192.121.42.195 >> /var/log/zabbix/xenapp_host_discovery.log 2>&1
 
 # Metrics Discovery (daily at 06:05)  
-5 6 * * * /usr/lib/zabbix/externalscripts/discover_xenapp_metrics.sh --trapper --zabbix-server 192.121.42.195
+5 6 * * * /usr/lib/zabbix/externalscripts/discover_xenapp_metrics.sh --trapper --zabbix-server 192.121.42.195 >> /var/log/zabbix/xenapp_metrics_discovery.log 2>&1
 
 # Metrics Collection (every minute)
-* * * * * /usr/lib/zabbix/externalscripts/query_xen_server.sh --trapper --zabbix-server 192.121.42.195
+* * * * * /usr/lib/zabbix/externalscripts/query_xen_server.sh --trapper --zabbix-server 192.121.42.195 >> /var/log/zabbix/xenapp_metrics_discovery.log 2>&1 >> /var/log/zabbix/xenapp_metrics.log 2>&1
 ```
 
 ## 🛠️ Troubleshooting
@@ -206,7 +194,6 @@ tail -f /var/log/zabbix/xenapp_*.log
 - **[Installation Guide](docs/INSTALLATION.md)** - Complete setup instructions
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Advanced configuration options
 - **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Screenshots Gallery](docs/SCREENSHOTS.md)** - Visual configuration guide
 
 ## 🎯 Use Cases
 
@@ -220,29 +207,9 @@ tail -f /var/log/zabbix/xenapp_*.log
 - **Resource Allocation**: Real-time utilization tracking
 - **Incident Response**: Automated alerting and escalation
 
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md).
 
 ### Development Setup
 ```bash
 git clone https://github.com/sofus999/zabbix-xenserver-nrpe-monitoring.git
 cd zabbix-xenserver-nrpe-monitoring
 ```
-
-### Code Style
-- Shell scripts follow [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html)
-- YAML templates use 2-space indentation
-- All scripts include comprehensive error handling
-
-
-## 🏆 Recognition
-
-This monitoring solution demonstrates:
-- **Enterprise Architecture**: Production-ready design patterns
-- **Automation Excellence**: Fully automated discovery and monitoring
-- **Scalability**: Supports large virtualization environments
-- **Reliability**: Robust error handling and recovery mechanisms
-- **Best Practices**: Security, logging, and monitoring standards
-
----
